@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير استكشاف النطاقات - جامعة العلوم والتكنولوجيا (UST)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(145deg, #0b1120 0%, #1a2332 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            color: #e5e7eb;
+        }
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 32px;
+            padding: 30px 40px;
+            margin-bottom: 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.6);
+        }
+        .header-title h1 {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(to left, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header-title p {
+            color: #94a3b8;
+            font-size: 15px;
+            margin-top: 4px;
+            -webkit-text-fill-color: #94a3b8;
+        }
+        .header-meta {
+            text-align: left;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px 24px;
+            border-radius: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .header-meta .student {
+            font-weight: 700;
+            color: #f1f5f9;
+            font-size: 18px;
+        }
+        .header-meta .supervisor {
+            font-size: 14px;
+            color: #60a5fa;
+        }
+        .header-meta .supervisor span {
+            color: #fcd34d;
+            font-weight: 600;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            margin-bottom: 35px;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 22px 20px;
+            backdrop-filter: blur(4px);
+            transition: transform 0.2s, border-color 0.2s;
+            cursor: default;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(96, 165, 250, 0.3);
+        }
+        .stat-card .label {
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-card .value {
+            font-size: 36px;
+            font-weight: 800;
+            margin-top: 6px;
+            color: #f8fafc;
+        }
+        .stat-card .sub {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        .stat-card.accent-blue .value {
+            color: #60a5fa;
+        }
+        .stat-card.accent-cyan .value {
+            color: #22d3ee;
+        }
+        .stat-card.accent-purple .value {
+            color: #a78bfa;
+        }
+        .stat-card.accent-amber .value {
+            color: #fbbf24;
+        }
+
+        /* Grid */
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 28px;
+            padding: 28px 25px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+            transition: border-color 0.3s;
+        }
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #f1f5f9;
+        }
+        .card-title .badge {
+            background: rgba(96, 165, 250, 0.15);
+            font-size: 12px;
+            padding: 2px 14px;
+            border-radius: 40px;
+            color: #93bbfc;
+            font-weight: 400;
+        }
+        .card-title .badge.cyan {
+            background: rgba(34, 211, 238, 0.12);
+            color: #67e8f9;
+        }
+        .card-title .badge.purple {
+            background: rgba(167, 139, 250, 0.15);
+            color: #c4b5fd;
+        }
+        .chart-container {
+            position: relative;
+            height: 240px;
+        }
+
+        /* Domain Lists */
+        .domain-list {
+            max-height: 200px;
+            overflow-y: auto;
+            padding-left: 5px;
+        }
+        .domain-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .domain-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+        }
+        .domain-list::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+        .domain-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 14px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            color: #cbd5e1;
+            border-right: 3px solid;
+            display: flex;
+            justify-content: space-between;
+            transition: background 0.15s;
+        }
+        .domain-item:hover {
+            background: rgba(255, 255, 255, 0.07);
+        }
+        .domain-item .source-tag {
+            font-size: 11px;
+            background: rgba(100, 116, 139, 0.2);
+            padding: 0 10px;
+            border-radius: 20px;
+            color: #94a3b8;
+            font-family: 'Cairo', sans-serif;
+        }
+        .domain-item.amass {
+            border-color: #60a5fa;
+        }
+        .domain-item.subfinder {
+            border-color: #22d3ee;
+        }
+        .domain-item.common {
+            border-color: #a78bfa;
+        }
+        .empty-state {
+            color: #64748b;
+            font-size: 14px;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 40px;
+            padding: 18px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            color: #475569;
+            font-size: 14px;
+        }
+
+        @media (max-width: 900px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .header-meta {
+                text-align: right;
+                width: 100%;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 500px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-title">
+                <h1>🎯 جامعة العلوم والتكنولوجيا – اليمن</h1>
+                <p>تقرير استكشاف النطاقات الفرعية · مقارنة Amass vs Subfinder للنطاق <strong>ust.edu.ye</strong></p>
+            </div>
+            <div class="header-meta">
+                <div class="student">👨‍🎓 ياسر أمين المنبهي</div>
+                <div class="supervisor">تحت إشراف: <span>المهندس شهاب</span></div>
+            </div>
+        </header>
+
+        <!-- STATS -->
+        <section class="stats-grid">
+            <div class="stat-card accent-blue">
+                <div class="label">🔵 إجمالي النطاقات (Amass)</div>
+                <div class="value">8</div>
+                <div class="sub">استكشاف هجين (سلبي + نشط + قاموس)</div>
+            </div>
+            <div class="stat-card accent-cyan">
+                <div class="label">🟢 إجمالي النطاقات (Subfinder)</div>
+                <div class="value">22</div>
+                <div class="sub">استكشاف سلبي بحت (25+ مصدر)</div>
+            </div>
+            <div class="stat-card accent-purple">
+                <div class="label">🔄 النطاقات المشتركة</div>
+                <div class="value">6</div>
+                <div class="sub">نسبة تطابق ~ 27.3%</div>
+            </div>
+            <div class="stat-card accent-amber">
+                <div class="label">🏆 الفرق في التغطية</div>
+                <div class="value">+14</div>
+                <div class="sub">Subfinder يكتشف 14 نطاقاً إضافياً</div>
+            </div>
+        </section>
+
+        <!-- CHARTS -->
+        <div class="row">
+            <div class="card">
+                <div class="card-title">📊 مقارنة الأداء <span class="badge">Amass vs Subfinder</span></div>
+                <div class="chart-container"><canvas id="comparisonChart"></canvas></div>
+            </div>
+            <div class="card">
+                <div class="card-title">🧩 تحليل التداخل <span class="badge cyan">فريد vs مشترك</span></div>
+                <div class="chart-container"><canvas id="overlapChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- LISTS -->
+        <div class="row">
+            <div class="card">
+                <div class="card-title">🔵 النطاقات الفريدة (Amass) <span class="badge">عدد 2</span></div>
+                <div class="domain-list" id="amassUniqueList"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">🟢 النطاقات الفريدة (Subfinder) <span class="badge cyan">عدد 16</span></div>
+                <div class="domain-list" id="subfinderUniqueList"></div>
+            </div>
+        </div>
+
+        <div class="row" style="grid-template-columns: 1fr;">
+            <div class="card">
+                <div class="card-title">🟣 النطاقات المشتركة بين الأداة <span class="badge purple">عدد 6</span></div>
+                <div class="domain-list" id="commonList" style="max-height: 150px;"></div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  البيانات المستخلصة من ملفاتك الفعلية (جامعة UST فقط)
+        // ============================================================
+
+        const STATS = {
+            amass_total: 8,
+            subfinder_total: 22,
+            common: 6,
+            amass_unique: 2,
+            subfinder_unique: 16
+        };
+
+        // القوائم الكاملة (نطاقات المستوى الثالث فأعلى للنطاق ust.edu.ye)
+        const LISTS = {
+            // فريد Amass (اكتشفها Amass ولم يجدها Subfinder)
+            amass_unique: [
+                'ftp.ust.edu.ye',
+                'autodiscover.ust.edu.ye'
+            ],
+            // فريد Subfinder (اكتشفها Subfinder ولم يجدها Amass)
+            subfinder_unique: [
+                'webmail.ust.edu.ye',
+                'www.smart.ust.edu.ye',
+                'www.wl.ust.edu.ye',
+                'www.journals.ust.edu.ye',
+                'pay.ust.edu.ye',
+                'cpcontacts.ust.edu.ye',
+                'www.lms.ust.edu.ye',
+                'webdisk.ust.edu.ye',
+                'cpanel.ust.edu.ye',
+                'www.portal.ust.edu.ye',
+                'www.repository.ust.edu.ye',
+                'www.pay.ust.edu.ye',
+                'ipv6.ust.edu.ye',
+                'smart.ust.edu.ye',
+                'wl.ust.edu.ye',
+                'cpcalendars.ust.edu.ye'
+            ],
+            // النطاقات المشتركة (موجودة في كلا الملفين)
+            common: [
+                'www.ust.edu.ye',
+                'portal.ust.edu.ye',
+                'mail.ust.edu.ye',
+                'journals.ust.edu.ye',
+                'repository.ust.edu.ye',
+                'lms.ust.edu.ye'
+            ]
+        };
+
+        // ============================================================
+        //  عرض القوائم
+        // ============================================================
+
+        function renderList(id, items, className) {
+            const container = document.getElementById(id);
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div class="empty-state">لا توجد نطاقات لعرضها</div>';
+                return;
+            }
+            let html = '';
+            items.forEach(item => {
+                const tag = className === 'amass' ? 'Amass' : (className === 'subfinder' ? 'Subfinder' : 'مشترك');
+                html += `<div class="domain-item ${className}"><span>${item}</span><span class="source-tag">${tag}</span></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        renderList('amassUniqueList', LISTS.amass_unique, 'amass');
+        renderList('subfinderUniqueList', LISTS.subfinder_unique, 'subfinder');
+        renderList('commonList', LISTS.common, 'common');
+
+        // ============================================================
+        //  رسم المخططات البيانية (Chart.js)
+        // ============================================================
+
+        // 1. المخطط الشريطي (مقارنة Amass vs Subfinder لـ UST)
+        const ctxBar = document.getElementById('comparisonChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['جامعة العلوم والتكنولوجيا (UST)'],
+                datasets: [{
+                    label: 'Amass',
+                    data: [STATS.amass_total],
+                    backgroundColor: 'rgba(96, 165, 250, 0.75)',
+                    borderColor: '#60a5fa',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                }, {
+                    label: 'Subfinder',
+                    data: [STATS.subfinder_total],
+                    backgroundColor: 'rgba(34, 211, 238, 0.75)',
+                    borderColor: '#22d3ee',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#cbd5e1', font: { family: 'Cairo', size: 13 } }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#94a3b8', stepSize: 5 },
+                        grid: { color: 'rgba(255,255,255,0.04)' }
+                    },
+                    x: {
+                        ticks: { color: '#cbd5e1', font: { family: 'Cairo' } },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // 2. المخطط الدائري (التداخل الكلي لـ UST)
+        const ctxPie = document.getElementById('overlapChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: ['فريد Amass', 'فريد Subfinder', 'مشترك'],
+                datasets: [{
+                    data: [
+                        STATS.amass_unique,
+                        STATS.subfinder_unique,
+                        STATS.common
+                    ],
+                    backgroundColor: ['#60a5fa', '#22d3ee', '#a78bfa'],
+                    borderColor: '#1a2332',
+                    borderWidth: 3,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#cbd5e1', font: { family: 'Cairo', size: 13 }, padding: 15 }
+                    }
+                },
+                cutout: '65%',
+            }
+        });
+
+        console.log('✅ تقرير ياسر أمين المنبهي (UST) جاهز!');
+        console.log(`📊 Amass: ${STATS.amass_total}, Subfinder: ${STATS.subfinder_total}, مشترك: ${STATS.common}`);
+    </script>
+</body>
+</html>
